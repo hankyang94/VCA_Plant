@@ -62,6 +62,7 @@ void VCA_Plant::DriveMotorASin(float motor_A_max_duty, int motor_A_frequency, in
         timer = micros() - start_time;
         this->DriveMotorADuty(motor_A_max_duty * sin(2.0*M_PI*motor_A_frequency*(timer/1e6)));   // send out PWM
         position_trajectory = this->ReadMotorAPositionBit();             // read the sensor position
+        Serial1.println(position_trajectory);
         while (micros() - timer - start_time < loop_period);  // wait for timer to increment, actually driving the VCA
     }
 }
