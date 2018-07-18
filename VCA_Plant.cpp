@@ -34,13 +34,15 @@ VCA_Plant::VCA_Plant(int motor_A_pwm_1, int motor_A_pwm_2, float motor_A_amplitu
 VCA_Plant::~VCA_Plant(void){}
 
 void VCA_Plant::DriveMotorADuty(float duty) {
+    int duty_bit = int(duty*256);
     if (duty > 0) {  // forward motor motion, pin 1 PWM, pin 2 low
-        analogWrite(_motor_A_pwm_1, abs(int(duty*256)));
+        analogWrite(_motor_A_pwm_1, duty_bit);
         analogWrite(_motor_A_pwm_2, 0);
     } else if (duty < 0) {  // reverse motor motion, pin 1 low, pin 2 PWM
         analogWrite(_motor_A_pwm_1, 0);
-        analogWrite(_motor_A_pwm_2, abs(int(duty*256)));
+        analogWrite(_motor_A_pwm_2, -duty_bit);
     } else {}
+    Serial1.println(duty_bit);
 }
 
 void VCA_Plant::StopMotorA() {  // stop motor, pin 1 and pin 2 both low
@@ -49,7 +51,9 @@ void VCA_Plant::StopMotorA() {  // stop motor, pin 1 and pin 2 both low
 }
 
 int VCA_Plant::ReadMotorAPositionBit() {
-    return analogRead(_motor_A_hall_pin);
+    int position = analogRead(_motor_A_hall_pin);
+    Serial1.println(position);
+    return position;
 }
 
 void VCA_Plant::DriveMotorASin(float motor_A_max_duty, int motor_A_frequency, int num_cycles, int loop_period) {
@@ -62,7 +66,6 @@ void VCA_Plant::DriveMotorASin(float motor_A_max_duty, int motor_A_frequency, in
         timer = micros() - start_time;
         this->DriveMotorADuty(motor_A_max_duty * sin(2.0*M_PI*motor_A_frequency*(timer/1e6)));   // send out PWM
         position_trajectory = this->ReadMotorAPositionBit();             // read the sensor position
-        Serial1.println(position_trajectory);
         while (micros() - timer - start_time < loop_period);  // wait for timer to increment, actually driving the VCA
     }
 }
