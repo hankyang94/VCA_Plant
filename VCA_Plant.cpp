@@ -9,7 +9,7 @@
 
 VCA_Plant::VCA_Plant(void)
         : VCA_Plant(35,     // pin 35 for pwm A 1
-                          36,     // pin 36 for pwm A 2
+                          36,     // pin 36 for pwm A 2, direction pin
                           1.0,    // default amplitude +- 1 mm
                           20,     // default frequency 20Hz
                           33,     // pin 33 for reading hall effect sensor and AD620
@@ -27,21 +27,48 @@ VCA_Plant::VCA_Plant(int motor_A_pwm_1, int motor_A_pwm_2, float motor_A_amplitu
                                   _voltage_per_bit(voltage_per_bit),
                                   _drive_read_micros(drive_read_micros){
     analogReadResolution(16);
-    pinMode(motor_A_pwm_1, OUTPUT);
-    pinMode(motor_A_pwm_2, OUTPUT);
+    // change the default PWM frequency to eliminate PWM switching noise
+    analogWriteFrequency(motor_A_pwm_1, 30000);
+    analogWriteFrequency(motor_A_pwm_2, 30000);
+//    pinMode(motor_A_pwm_1, OUTPUT);
+//    pinMode(motor_A_pwm_2, OUTPUT);
 }
 
 VCA_Plant::~VCA_Plant(void){}
 
 void VCA_Plant::DriveMotorADuty(float duty) {
     int duty_bit = int(duty*256);
-    if (duty > 0) {  // forward motor motion, pin 1 PWM, pin 2 low
+//    Serial.println(duty_bit);
+    //////////////// use one-channel MAX14870 motor driver //////////////////////
+    if (duty > 0) { // forward motor motion, PIN 1 PWM, PIN 2 HIGH
+        analogWrite(_motor_A_pwm_1, duty_bit);
+        digitalWrite(_motor_A_pwm_2, HIGH);
+    } else if (duty < 0) { // reverse motor motion, PIN 1 PWM, PIN 2 LOW
+        analogWrite(_motor_A_pwm_1, -duty_bit);
+        digitalWrite(_motor_A_pwm_2, LOW);
+    } else {}
+
+    /* /////////// use two-channel DRV8833 motor driver /////////////////
+    if (duty > 0) {  // forward motor motion slow decay, pin 1 HIGH, pin 2 PWM
+        // slow decay
+//        digitalWrite(_motor_A_pwm_1, HIGH);
+//        analogWrite(_motor_A_pwm_1, 255);
+//        analogWrite(_motor_A_pwm_2, duty_bit);
+
+//        // fast decay
         analogWrite(_motor_A_pwm_1, duty_bit);
         analogWrite(_motor_A_pwm_2, 0);
-    } else if (duty < 0) {  // reverse motor motion, pin 1 low, pin 2 PWM
+    } else if (duty < 0) {  // reverse motor motion slow decay, pin 1 PWM, pin 2 1
+        // slow decay
+//        analogWrite(_motor_A_pwm_1, -duty_bit);
+//        analogWrite(_motor_A_pwm_2, 255);
+//        digitalWrite(_motor_A_pwm_2, HIGH);
+
+        // fast decay
         analogWrite(_motor_A_pwm_1, 0);
         analogWrite(_motor_A_pwm_2, -duty_bit);
     } else {}
+     */
     Serial1.println(duty_bit);
 }
 
@@ -54,6 +81,11 @@ int VCA_Plant::ReadMotorAPositionBit() {
     int position = analogRead(_motor_A_hall_pin);
     Serial1.println(position);
     return position;
+}
+
+float VCA_Plant::ReadMotorAPositionVoltage() {
+    int bit = this->ReadMotorAPositionBit();
+    return bit * _voltage_per_bit;
 }
 
 void VCA_Plant::DriveMotorASin(float motor_A_max_duty, int motor_A_frequency, int num_cycles, int loop_period) {

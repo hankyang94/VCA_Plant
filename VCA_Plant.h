@@ -22,6 +22,8 @@ public:
 
     int ReadMotorAPositionBit();     // read the senor data in raw bits
 
+    float ReadMotorAPositionVoltage();  // read the sensor data in voltage
+
     void DriveMotorASin(float motor_A_max_duty,  // maximum duty cycle
                         int motor_A_frequency,   // vibration frequency
                         int num_cycles,          // vibration cycles
