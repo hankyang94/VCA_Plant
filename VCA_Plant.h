@@ -24,6 +24,10 @@ public:
 
     float ReadMotorAPositionVoltage();  // read the sensor data in voltage
 
+    float ReadMotorAPositionMM();    // read the sensor data in mm
+
+    float MotorACalibration(int bit);  // calibration result for motor A
+
     void DriveMotorASin(float motor_A_max_duty,  // maximum duty cycle
                         int motor_A_frequency,   // vibration frequency
                         int num_cycles,          // vibration cycles

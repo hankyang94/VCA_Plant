@@ -88,6 +88,38 @@ float VCA_Plant::ReadMotorAPositionVoltage() {
     return bit * _voltage_per_bit;
 }
 
+float VCA_Plant::ReadMotorAPositionMM() {
+    int bit = this->ReadMotorAPositionBit();
+    return this->MotorACalibration(bit);   // convert to mm by using calibration results
+}
+
+float VCA_Plant::MotorACalibration(int bit) {   // hall-effect sensor calibration results
+    float bitF = (float) bit;
+//    Serial.println(bitF);
+    //////////// use fourier 6, slower //////////////
+    float w = 7.430636447530014e-05;
+    float a0 = 26.369001417046512;
+    float a1 = 42.792366553793926;
+    float b1 = -12.324717735287519;
+    float a2 = 26.933499765232902;
+    float b2 = -19.530367509074463;
+    float a3 = 11.315150651232333;
+    float b3 = -16.631428975580668;
+    float a4 = 2.489294162580928;
+    float b4 = -9.153722109383629;
+    float a5 = -0.215475782450290;
+    float b5 = -3.180320439074931;
+    float a6 = -0.256214035002475;
+    float b6 = -0.536035032104161;
+    return a0 + a1*cos(bitF*w) + b1*sin(bitF*w)
+            + a2*cos(2.0*bitF*w) + b2*sin(2.0*bitF*w)
+            + a3*cos(3.0*bitF*w) + b3*sin(3.0*bitF*w)
+            + a4*cos(4.0*bitF*w) + b4*sin(4.0*bitF*w)
+            + a5*cos(5.0*bitF*w) + b5*sin(5.0*bitF*w)
+            + a6*cos(6.0*bitF*w) + b6*sin(6.0*bitF*w);
+    ///////////////////////////////////////////
+}
+
 void VCA_Plant::DriveMotorASin(float motor_A_max_duty, int motor_A_frequency, int num_cycles, int loop_period) {
     _motor_A_frequency = motor_A_frequency;
     int num_loops = int(1.0/float(motor_A_frequency)*1000000) / loop_period * num_cycles;
