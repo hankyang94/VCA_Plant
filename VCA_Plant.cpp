@@ -95,7 +95,7 @@ void VCA_Plant::DriveMotorBDuty(float duty) {
         analogWrite(_motor_B_pwm_1, -duty_bit);
         digitalWrite(_motor_B_pwm_2, LOW);
     } else {}
-    Serial1.println(duty_bit);
+    Serial1.println(duty_bit+600);
 }
 
 void VCA_Plant::StopMotorA() {  // stop motor, pin 1 and pin 2 both low
@@ -159,7 +159,7 @@ float VCA_Plant::MotorACalibration(int bit) {   // hall-effect sensor calibratio
 
 int VCA_Plant::ReadMotorBPositionBit() {
     int position = analogRead(_motor_B_hall_pin);
-    Serial1.println(position);
+    Serial1.println(-position);
     return position;
 }
 
