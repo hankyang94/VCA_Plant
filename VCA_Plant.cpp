@@ -176,6 +176,30 @@ float VCA_Plant::ReadMotorBPositionMM() {
 float VCA_Plant::MotorBCalibration(int bit) {   // hall-effect sensor calibration results
     float bitF = (float) bit;
 //    Serial.println(bitF);
+    ////////// switched to new motor B, named motor B2 ///////////
+    float w = 9.099970541690728e-05;
+    float a0 = 3.715187920820448;
+    float a1 = 2.820576951386104;
+    float b1 = 2.674949445999845;
+    float a2 = 1.725486462172244;
+    float b2 = 2.154622022327406;
+    float a3 = 0.907940073805808;
+    float b3 = 1.502616360408141;
+    float a4 = 0.311505073954304;
+    float b4 = 0.870211932820066;
+    float a5 = 0.050838014905600;
+    float b5 = 0.402629762266119;
+    float a6 = -0.006992714462966;
+    float b6 = 0.114623614440831;
+    return a0 + a1*cos(bitF*w) + b1*sin(bitF*w)
+           + a2*cos(2.0*bitF*w) + b2*sin(2.0*bitF*w)
+           + a3*cos(3.0*bitF*w) + b3*sin(3.0*bitF*w)
+           + a4*cos(4.0*bitF*w) + b4*sin(4.0*bitF*w)
+           + a5*cos(5.0*bitF*w) + b5*sin(5.0*bitF*w)
+           + a6*cos(6.0*bitF*w) + b6*sin(6.0*bitF*w);
+
+
+    /* old VCA, friction was high, switched to new motor B
     //////////// use fourier 6, slower //////////////
     float w = 9.745973193663611e-05;
     float a0 = 2.677556372177879;
@@ -198,6 +222,7 @@ float VCA_Plant::MotorBCalibration(int bit) {   // hall-effect sensor calibratio
            + a5*cos(5.0*bitF*w) + b5*sin(5.0*bitF*w)
            + a6*cos(6.0*bitF*w) + b6*sin(6.0*bitF*w);
     ///////////////////////////////////////////
+    */
 }
 
 void VCA_Plant::DriveMotorASin(float motor_A_max_duty, int motor_A_frequency, int num_cycles, int loop_period) {
